@@ -248,7 +248,8 @@ type ListBucketResultV2 struct {
 	NextContinuationToken string `xml:"NextContinuationToken,omitempty"`
 
 	// If StartAfter was sent with the request, it is included in the response.
-	StartAfter string `xml:"StartAfter,omitempty"`
+	StartAfter   string `xml:"StartAfter,omitempty"`
+	EncodingType string `xml:"EncodingType,omitempty"`
 }
 
 type DeleteMarker struct {
