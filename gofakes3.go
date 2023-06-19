@@ -257,7 +257,7 @@ func (g *GoFakeS3) listBucket(bucketName string, w http.ResponseWriter, r *http.
 		Contents:       objects.Contents,
 		IsTruncated:    objects.IsTruncated,
 		Delimiter:      prefix.Delimiter,
-		Prefix:         prefix.Prefix,
+		Prefix:         URLEncode(prefix.Prefix),
 		MaxKeys:        page.MaxKeys,
 	}
 
