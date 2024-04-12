@@ -155,6 +155,7 @@ func (tc *testCLI) command(method string, subcommand string, args ...string) *ex
 	cmd.Env = []string{
 		"AWS_ACCESS_KEY_ID=key",
 		"AWS_SECRET_ACCESS_KEY=secret",
+		"AWS_EC2_METADATA_DISABLED=true", // See: https://github.com/aws/aws-cli/issues/5234#issuecomment-705831465
 	}
 	return cmd
 }
