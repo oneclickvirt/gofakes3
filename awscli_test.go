@@ -174,6 +174,9 @@ func (tc *testCLI) output(method string, subcommand string, args ...string) (out
 	if _, ok := err.(*exec.Error); ok {
 		tc.Skip("aws cli not found on $PATH")
 	}
+	if err != nil {
+		tc.Log(string(out))
+	}
 	tc.OK(err)
 	return out
 }
@@ -183,6 +186,9 @@ func (tc *testCLI) combinedOutput(method string, subcommand string, args ...stri
 	out, err := tc.command(method, subcommand, args...).CombinedOutput()
 	if _, ok := err.(*exec.Error); ok {
 		tc.Skip("aws cli not found on $PATH")
+	}
+	if err != nil {
+		tc.Log(string(out))
 	}
 	tc.OK(err)
 	return out
