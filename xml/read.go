@@ -626,8 +626,6 @@ func copyValue(dst reflect.Value, src []byte) (err error) {
 	switch dst.Kind() {
 	case reflect.Invalid:
 		// Probably a comment.
-	default:
-		return errors.New("cannot unmarshal into " + dst0.Type().String())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		if len(src) == 0 {
 			dst.SetInt(0)
@@ -676,6 +674,8 @@ func copyValue(dst reflect.Value, src []byte) (err error) {
 			src = []byte{}
 		}
 		dst.SetBytes(src)
+	default:
+		return errors.New("cannot unmarshal into " + dst0.Type().String())
 	}
 	return nil
 }
