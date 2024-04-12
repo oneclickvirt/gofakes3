@@ -272,6 +272,7 @@ func TestCreateObjectWithContentDisposition(t *testing.T) {
 		Bucket: aws.String(defaultBucket),
 		Key:    aws.String("object"),
 	})
+	ts.OK(err)
 	if obj.ContentDisposition == nil {
 		t.Fatal("missing Content-Disposition")
 	}

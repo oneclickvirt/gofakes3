@@ -22,6 +22,7 @@ func newVersionGenerator(seed uint64, size int) *versionGenerator {
 	if size <= 0 {
 		size = 64
 	}
+	_ = size // FIXME size is unused here - maybe it should go into versionGenerator
 	return &versionGenerator{next: new(big.Int), state: seed}
 }
 

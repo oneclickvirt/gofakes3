@@ -5,7 +5,7 @@ linters:
     #- errcheck
     - goimports
     #- revive
-    #- ineffassign
+    - ineffassign
     - govet
     #- unconvert
     #- staticcheck
