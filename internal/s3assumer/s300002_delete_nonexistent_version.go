@@ -17,7 +17,6 @@ import (
 // This test confirms that this is indeed the case.
 //
 // It also highlighted that the delete methods return a 204 status, not a 200.
-//
 type S300002DeleteNonexistentVersion struct{}
 
 func (s S300002DeleteNonexistentVersion) Run(ctx *Context) error {

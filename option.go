@@ -23,7 +23,6 @@ func WithTimeSource(timeSource TimeSource) Option {
 // calculate the skew.
 //
 // See DefaultSkewLimit for the starting value, set to '0' to disable.
-//
 func WithTimeSkewLimit(skew time.Duration) Option {
 	return func(g *GoFakeS3) { g.timeSkew = skew }
 }

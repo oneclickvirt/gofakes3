@@ -2,11 +2,12 @@ package gofakes3
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestChunkedUploadSuccess(t *testing.T) {

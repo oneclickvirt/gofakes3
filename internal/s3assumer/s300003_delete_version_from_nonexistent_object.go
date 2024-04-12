@@ -15,7 +15,6 @@ import (
 // that no error is returned; this is consistent with DeleteObject.
 //
 // This test confirms that this is indeed the case.
-//
 type S300003DeleteVersionFromNonexistentObject struct{}
 
 func (s S300003DeleteVersionFromNonexistentObject) Run(ctx *Context) error {
