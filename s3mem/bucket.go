@@ -12,8 +12,6 @@ import (
 
 type versionGenFunc func() gofakes3.VersionID
 
-type versioningStatus int
-
 type bucket struct {
 	name         string
 	versioning   gofakes3.VersioningStatus
@@ -51,11 +49,10 @@ func (b *bucketObject) Iterator() *bucketObjectIterator {
 }
 
 type bucketObjectIterator struct {
-	data     *bucketData
-	iter     skiplist.Iterator
-	cur      *bucketData
-	seenData bool
-	done     bool
+	data *bucketData
+	iter skiplist.Iterator
+	cur  *bucketData
+	done bool
 }
 
 func (b *bucketObjectIterator) Seek(key gofakes3.VersionID) bool {

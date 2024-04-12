@@ -160,9 +160,6 @@ type testServerOption func(ts *testServer)
 func withoutInitialBuckets() testServerOption {
 	return func(ts *testServer) { ts.initialBuckets = nil }
 }
-func withInitialBuckets(buckets ...string) testServerOption {
-	return func(ts *testServer) { ts.initialBuckets = buckets }
-}
 func withVersioning() testServerOption {
 	return func(ts *testServer) { ts.versioning = true }
 }
@@ -789,14 +786,6 @@ func readBody(tt gofakes3.TT, body interface{}) []byte {
 
 func prefixFile(prefix string) *gofakes3.Prefix {
 	return &gofakes3.Prefix{Delimiter: "/", Prefix: prefix}
-}
-
-func prefix(prefix string) *gofakes3.Prefix {
-	return &gofakes3.Prefix{Prefix: prefix}
-}
-
-func prefixDelim(prefix string, delim string) *gofakes3.Prefix {
-	return &gofakes3.Prefix{Prefix: prefix, Delimiter: delim}
 }
 
 func strs(s ...string) []string {

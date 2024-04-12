@@ -37,7 +37,6 @@ type Ship struct {
 	Drive     DriveType    `xml:"drive"`
 	Age       uint         `xml:"age"`
 	Passenger []*Passenger `xml:"passenger"`
-	secret    string
 }
 
 type NamedType string
@@ -155,7 +154,6 @@ type EmbedC struct {
 }
 
 type embedD struct {
-	fieldD string
 	FieldE string // Promoted and visible when embedD is embedded.
 }
 

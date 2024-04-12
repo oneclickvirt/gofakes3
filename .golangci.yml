@@ -11,7 +11,7 @@ linters:
     #- staticcheck
     - gosimple
     - stylecheck
-    #- unused
+    - unused
     - misspell
     #- prealloc
     #- maligned
