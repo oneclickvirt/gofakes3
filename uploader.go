@@ -459,7 +459,7 @@ func (mpu *multipartUpload) AddPart(partNumber int, at time.Time, body []byte) (
 	// What the ETag actually is is not specified, so let's just invent any old thing
 	// from guaranteed unique input:
 	hash := md5.New()
-	hash.Write([]byte(body))
+	hash.Write(body)
 	etag = fmt.Sprintf(`"%s"`, hex.EncodeToString(hash.Sum(nil)))
 
 	part := multipartUploadPart{

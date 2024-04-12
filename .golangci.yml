@@ -7,7 +7,7 @@ linters:
     #- revive
     - ineffassign
     - govet
-    #- unconvert
+    - unconvert
     #- staticcheck
     - gosimple
     - stylecheck
