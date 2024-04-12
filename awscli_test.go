@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Mikubill/gofakes3"
+	"github.com/rclone/gofakes3"
 )
 
 func TestCLILsBuckets(t *testing.T) {

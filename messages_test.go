@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	xml "github.com/Mikubill/gofakes3/xml"
+	xml "github.com/rclone/gofakes3/xml"
 )
 
 func TestObjectListAddPrefix(t *testing.T) {

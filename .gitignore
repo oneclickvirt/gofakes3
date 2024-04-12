@@ -8,3 +8,4 @@ s3f_*
 *.out
 .devcontainer/
 build/
+*~

@@ -31,8 +31,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Mikubill/gofakes3"
-	"github.com/Mikubill/gofakes3/s3mem"
+	"github.com/rclone/gofakes3"
+	"github.com/rclone/gofakes3/s3mem"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"

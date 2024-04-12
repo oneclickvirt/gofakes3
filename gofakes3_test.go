@@ -16,10 +16,10 @@ import (
 	"testing"
 	"time"
 
-	xml "github.com/Mikubill/gofakes3/xml"
+	xml "github.com/rclone/gofakes3/xml"
 
-	"github.com/Mikubill/gofakes3"
-	"github.com/Mikubill/gofakes3/s3mem"
+	"github.com/rclone/gofakes3"
+	"github.com/rclone/gofakes3/s3mem"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 )

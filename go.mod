@@ -1,4 +1,4 @@
-module github.com/Mikubill/gofakes3
+module github.com/rclone/gofakes3
 
 go 1.17
 
