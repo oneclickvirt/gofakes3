@@ -67,7 +67,7 @@ func parseSignedHeader(hdrElement string) ([]string, ErrorCode) {
 
 // Parse signature from signature tag.
 //
-// exmaple: Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024
+// example: Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024
 func parseSignature(signElement string) (string, ErrorCode) {
 	return extractFields(signElement, "Signature")
 }
