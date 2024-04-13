@@ -1097,8 +1097,8 @@ func TestCVE202230633(t *testing.T) {
 		Things []string
 	}
 	err := Unmarshal(bytes.Repeat([]byte("<a>"), 17_000_000), &example)
-	if err != nil {
-		t.Error(err)
+	if err == nil {
+		t.Errorf("Expecting an error here")
 	}
 }
 

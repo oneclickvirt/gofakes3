@@ -1054,8 +1054,8 @@ func TestTokenUnmarshaler(t *testing.T) {
 
 	d := NewTokenDecoder(tokReader{})
 	err := d.Decode(&Failure{})
-	if err != nil {
-		t.Error(err)
+	if err == nil {
+		t.Error("Expecting an error here")
 	}
 }
 
