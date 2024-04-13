@@ -248,7 +248,12 @@ func TestCreateObjectWithInvalidContentLength(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer rs.Body.Close()
+	defer func() {
+		err := rs.Body.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}()
 
 	if rs.StatusCode != http.StatusBadRequest {
 		t.Fatal(rs.StatusCode, "!=", http.StatusBadRequest)
@@ -380,7 +385,12 @@ func TestCopyObject(t *testing.T) {
 	obj, err := ts.backend.GetObject(mockR.Context(), defaultBucket, "dst-key", nil)
 	ts.OK(err)
 
-	defer obj.Contents.Close()
+	defer func() {
+		err := obj.Contents.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}()
 	data, err := ioutil.ReadAll(obj.Contents)
 	ts.OK(err)
 
@@ -581,7 +591,12 @@ func TestGetObjectRange(t *testing.T) {
 		}
 		if !fail {
 			ts.OK(err)
-			defer obj.Body.Close()
+			defer func() {
+				err := obj.Body.Close()
+				if err != nil {
+					t.Error(err)
+				}
+			}()
 
 			out, err := ioutil.ReadAll(obj.Body)
 			ts.OK(err)
@@ -718,7 +733,10 @@ func TestCreateObjectBrowserUpload(t *testing.T) {
 	}
 
 	upload := func(ts *testServer, bucket string, w *multipart.Writer, body io.Reader) (*http.Response, error) {
-		w.Close()
+		err := w.Close()
+		if err != nil {
+			ts.Error(err)
+		}
 		req, err := http.NewRequest("POST", ts.url("/"+bucket), body)
 		ts.OK(err)
 		req.Header.Set("Content-Type", w.FormDataContentType())
@@ -742,7 +760,12 @@ func TestCreateObjectBrowserUpload(t *testing.T) {
 		if res.StatusCode != expectedCode.Status() {
 			ts.Fatal("bad status", res.StatusCode, "!=", expectedCode.Status())
 		}
-		defer res.Body.Close()
+		defer func() {
+			err := res.Body.Close()
+			if err != nil {
+				ts.Error(err)
+			}
+		}()
 		var errResp gofakes3.ErrorResponse
 		dec := xml.NewDecoder(res.Body)
 		ts.OK(dec.Decode(&errResp))
@@ -891,7 +914,12 @@ func TestObjectVersions(t *testing.T) {
 		}
 		out, err := svc.GetObject(input)
 		ts.OK(err)
-		defer out.Body.Close()
+		defer func() {
+			err := out.Body.Close()
+			if err != nil {
+				ts.Error(err)
+			}
+		}()
 		bts, err := ioutil.ReadAll(out.Body)
 		ts.OK(err)
 		if !bytes.Equal(bts, contents) {

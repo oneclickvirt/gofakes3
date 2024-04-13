@@ -67,12 +67,11 @@ func TestMain(m *testing.M) {
 	os.Exit(0)
 }
 
-func runTestMain(m *testing.M) error {
+func runTestMain(m *testing.M) (err error) {
 	flag.StringVar(&logFile, "fakes3.log", "", "Log file (temp file by default)")
 	flag.Parse()
 
 	var logOutput *os.File
-	var err error
 
 	if logFile == "" {
 		logOutput, err = ioutil.TempFile("", "gofakes3-*.log")
@@ -82,7 +81,7 @@ func runTestMain(m *testing.M) error {
 	if err != nil {
 		return err
 	}
-	defer logOutput.Close()
+	defer gofakes3.CheckClose(logOutput, &err)
 
 	fmt.Fprintf(os.Stderr, "log output redirected to %q\n", logOutput.Name())
 	log.SetOutput(logOutput)
@@ -261,7 +260,12 @@ func (ts *testServer) backendGetString(bucket, key string, rnge *gofakes3.Object
 	obj, err := ts.backend.GetObject(mockR.Context(), bucket, key, rnge)
 	ts.OK(err)
 
-	defer obj.Contents.Close()
+	defer func() {
+		err := obj.Contents.Close()
+		if err != nil {
+			ts.Error(err)
+		}
+	}()
 	data, err := ioutil.ReadAll(obj.Contents)
 	ts.OK(err)
 
@@ -608,7 +612,12 @@ func (ts *testServer) assertObject(bucket string, object string, meta map[string
 
 	obj, err := ts.backend.GetObject(mockR.Context(), bucket, object, nil)
 	ts.OK(err)
-	defer obj.Contents.Close()
+	defer func() {
+		err := obj.Contents.Close()
+		if err != nil {
+			ts.Error(err)
+		}
+	}()
 
 	data, err := gofakes3.ReadAll(obj.Contents, obj.Size)
 	ts.OK(err)
@@ -874,7 +883,7 @@ func (c *rawClient) SetHeaders(rq *http.Request, body []byte) {
 // SendRaw can be used to bypass Go's http client, which helps us out a lot by taking
 // care of some things for us, but which we actually want to test messing up from
 // time to time.
-func (c *rawClient) SendRaw(rq *http.Request) ([]byte, error) {
+func (c *rawClient) SendRaw(rq *http.Request) (out []byte, err error) {
 	b, err := httputil.DumpRequest(rq, true)
 	if err != nil {
 		return nil, err
@@ -883,10 +892,12 @@ func (c *rawClient) SendRaw(rq *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer gofakes3.CheckClose(conn, &err)
 
 	deadline := time.Now().Add(2 * time.Second)
-	conn.SetDeadline(deadline)
+	if err := conn.SetDeadline(deadline); err != nil {
+		return nil, err
+	}
 	if _, err := conn.Write(b); err != nil {
 		return nil, err
 	}

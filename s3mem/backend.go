@@ -267,7 +267,12 @@ func (db *Backend) CopyObject(ctx context.Context, srcBucket, srcKey, dstBucket,
 	if err != nil {
 		return
 	}
-	defer c.Contents.Close()
+	defer func() {
+		closeErr := c.Contents.Close()
+		if closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	for k, v := range c.Metadata {
 		if _, found := meta[k]; !found && k != "X-Amz-Acl" {

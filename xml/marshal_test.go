@@ -318,9 +318,18 @@ type MyMarshalerTest struct {
 var _ Marshaler = (*MyMarshalerTest)(nil)
 
 func (m *MyMarshalerTest) MarshalXML(e *Encoder, start StartElement) error {
-	e.EncodeToken(start)
-	e.EncodeToken(CharData([]byte("hello world")))
-	e.EncodeToken(EndElement{start.Name})
+	err := e.EncodeToken(start)
+	if err != nil {
+		return err
+	}
+	err = e.EncodeToken(CharData([]byte("hello world")))
+	if err != nil {
+		return err
+	}
+	err = e.EncodeToken(EndElement{start.Name})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1911,7 +1920,10 @@ func BenchmarkMarshal(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			Marshal(atomValue)
+			_, err := Marshal(atomValue)
+			if err != nil {
+				b.Error(err)
+			}
 		}
 	})
 }
@@ -1921,7 +1933,7 @@ func BenchmarkUnmarshal(b *testing.B) {
 	xml := []byte(atomXML)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			Unmarshal(xml, &Feed{})
+			_ = Unmarshal(xml, &Feed{})
 		}
 	})
 }
@@ -2393,7 +2405,10 @@ func TestRace9796(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		wg.Add(1)
 		go func() {
-			Marshal(B{[]A{{}}})
+			_, err := Marshal(B{[]A{{}}})
+			if err != nil {
+				t.Error(err)
+			}
 			wg.Done()
 		}()
 	}

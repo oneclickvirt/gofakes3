@@ -1053,7 +1053,10 @@ func TestTokenUnmarshaler(t *testing.T) {
 	}()
 
 	d := NewTokenDecoder(tokReader{})
-	d.Decode(&Failure{})
+	err := d.Decode(&Failure{})
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func testRoundTrip(t *testing.T, input string) {

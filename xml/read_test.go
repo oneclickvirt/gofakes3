@@ -1096,7 +1096,10 @@ func TestCVE202230633(t *testing.T) {
 	var example struct {
 		Things []string
 	}
-	Unmarshal(bytes.Repeat([]byte("<a>"), 17_000_000), &example)
+	err := Unmarshal(bytes.Repeat([]byte("<a>"), 17_000_000), &example)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 // golang.org/issues/53350

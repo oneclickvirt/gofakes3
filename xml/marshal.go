@@ -212,14 +212,26 @@ func (enc *Encoder) EncodeToken(t Token) error {
 			return err
 		}
 	case CharData:
-		escapeText(p, t, false)
+		err := escapeText(p, t, false)
+		if err != nil {
+			return err
+		}
 	case Comment:
 		if bytes.Contains(t, endComment) {
 			return fmt.Errorf("xml: EncodeToken of Comment containing --> marker")
 		}
-		p.WriteString("<!--")
-		p.Write(t)
-		p.WriteString("-->")
+		_, err := p.WriteString("<!--")
+		if err != nil {
+			return err
+		}
+		_, err = p.Write(t)
+		if err != nil {
+			return err
+		}
+		_, err = p.WriteString("-->")
+		if err != nil {
+			return err
+		}
 		return p.cachedWriteError()
 	case ProcInst:
 		// First token to be encoded which is also a ProcInst with target of xml
@@ -233,20 +245,44 @@ func (enc *Encoder) EncodeToken(t Token) error {
 		if bytes.Contains(t.Inst, endProcInst) {
 			return fmt.Errorf("xml: EncodeToken of ProcInst containing ?> marker")
 		}
-		p.WriteString("<?")
-		p.WriteString(t.Target)
-		if len(t.Inst) > 0 {
-			p.WriteByte(' ')
-			p.Write(t.Inst)
+		_, err := p.WriteString("<?")
+		if err != nil {
+			return err
 		}
-		p.WriteString("?>")
+		_, err = p.WriteString(t.Target)
+		if err != nil {
+			return err
+		}
+		if len(t.Inst) > 0 {
+			err := p.WriteByte(' ')
+			if err != nil {
+				return err
+			}
+			_, err = p.Write(t.Inst)
+			if err != nil {
+				return err
+			}
+		}
+		_, err = p.WriteString("?>")
+		if err != nil {
+			return err
+		}
 	case Directive:
 		if !isValidDirective(t) {
 			return fmt.Errorf("xml: EncodeToken of Directive containing wrong < or > markers")
 		}
-		p.WriteString("<!")
-		p.Write(t)
-		p.WriteString(">")
+		_, err := p.WriteString("<!")
+		if err != nil {
+			return err
+		}
+		_, err = p.Write(t)
+		if err != nil {
+			return err
+		}
+		_, err = p.WriteString(">")
+		if err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("xml: EncodeToken of invalid token type")
 
@@ -365,11 +401,11 @@ func (p *printer) createAttrPrefix(url string) string {
 	p.attrPrefix[url] = prefix
 	p.attrNS[prefix] = url
 
-	p.WriteString(`xmlns:`)
-	p.WriteString(prefix)
-	p.WriteString(`="`)
-	EscapeText(p, []byte(url))
-	p.WriteString(`" `)
+	_, _ = p.WriteString(`xmlns:`)
+	_, _ = p.WriteString(prefix)
+	_, _ = p.WriteString(`="`)
+	_ = EscapeText(p, []byte(url))
+	_, _ = p.WriteString(`" `)
 
 	p.prefixes = append(p.prefixes, prefix)
 
@@ -537,7 +573,10 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo, startTemplat
 		if err1 != nil {
 			err = err1
 		} else if b != nil {
-			EscapeText(p, b)
+			err = EscapeText(p, b)
+			if err != nil {
+				return err
+			}
 		} else {
 			p.EscapeString(s)
 		}
@@ -688,7 +727,10 @@ func (p *printer) marshalTextInterface(val encoding.TextMarshaler, start StartEl
 	if err != nil {
 		return err
 	}
-	EscapeText(p, text)
+	err = EscapeText(p, text)
+	if err != nil {
+		return err
+	}
 	return p.writeEnd(start.Name)
 }
 
@@ -702,13 +744,25 @@ func (p *printer) writeStart(start *StartElement) error {
 	p.markPrefix()
 
 	p.writeIndent(1)
-	p.WriteByte('<')
-	p.WriteString(start.Name.Local)
+	err := p.WriteByte('<')
+	if err != nil {
+		return err
+	}
+	_, err = p.WriteString(start.Name.Local)
+	if err != nil {
+		return err
+	}
 
 	if start.Name.Space != "" {
-		p.WriteString(` xmlns="`)
+		_, err = p.WriteString(` xmlns="`)
+		if err != nil {
+			return err
+		}
 		p.EscapeString(start.Name.Space)
-		p.WriteByte('"')
+		err = p.WriteByte('"')
+		if err != nil {
+			return err
+		}
 	}
 
 	// Attributes
@@ -717,17 +771,38 @@ func (p *printer) writeStart(start *StartElement) error {
 		if name.Local == "" {
 			continue
 		}
-		p.WriteByte(' ')
-		if name.Space != "" {
-			p.WriteString(p.createAttrPrefix(name.Space))
-			p.WriteByte(':')
+		err = p.WriteByte(' ')
+		if err != nil {
+			return err
 		}
-		p.WriteString(name.Local)
-		p.WriteString(`="`)
+		if name.Space != "" {
+			_, err = p.WriteString(p.createAttrPrefix(name.Space))
+			if err != nil {
+				return err
+			}
+			err = p.WriteByte(':')
+			if err != nil {
+				return err
+			}
+		}
+		_, err = p.WriteString(name.Local)
+		if err != nil {
+			return err
+		}
+		_, err = p.WriteString(`="`)
+		if err != nil {
+			return err
+		}
 		p.EscapeString(attr.Value)
-		p.WriteByte('"')
+		err = p.WriteByte('"')
+		if err != nil {
+			return err
+		}
 	}
-	p.WriteByte('>')
+	err = p.WriteByte('>')
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -747,10 +822,22 @@ func (p *printer) writeEnd(name Name) error {
 	p.tags = p.tags[:len(p.tags)-1]
 
 	p.writeIndent(-1)
-	p.WriteByte('<')
-	p.WriteByte('/')
-	p.WriteString(name.Local)
-	p.WriteByte('>')
+	err := p.WriteByte('<')
+	if err != nil {
+		return err
+	}
+	err = p.WriteByte('/')
+	if err != nil {
+		return err
+	}
+	_, err = p.WriteString(name.Local)
+	if err != nil {
+		return err
+	}
+	err = p.WriteByte('>')
+	if err != nil {
+		return err
+	}
 	p.popPrefix()
 	return nil
 }
@@ -898,7 +985,10 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 				continue
 			}
 			p.writeIndent(0)
-			p.WriteString("<!--")
+			_, err := p.WriteString("<!--")
+			if err != nil {
+				return err
+			}
 			dashDash := false
 			dashLast := false
 			switch k {
@@ -907,14 +997,20 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 				dashDash = strings.Contains(s, "--")
 				dashLast = s[len(s)-1] == '-'
 				if !dashDash {
-					p.WriteString(s)
+					_, err = p.WriteString(s)
+					if err != nil {
+						return err
+					}
 				}
 			case reflect.Slice:
 				b := vf.Bytes()
 				dashDash = bytes.Contains(b, ddBytes)
 				dashLast = b[len(b)-1] == '-'
 				if !dashDash {
-					p.Write(b)
+					_, err = p.Write(b)
+					if err != nil {
+						return err
+					}
 				}
 			default:
 				panic("can't happen")
@@ -924,9 +1020,15 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 			}
 			if dashLast {
 				// "--->" is invalid grammar. Make it "- -->"
-				p.WriteByte(' ')
+				err = p.WriteByte(' ')
+				if err != nil {
+					return err
+				}
 			}
-			p.WriteString("-->")
+			_, err = p.WriteString("-->")
+			if err != nil {
+				return err
+			}
 			continue
 
 		case fInnerXML:
@@ -934,10 +1036,16 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 			iface := vf.Interface()
 			switch raw := iface.(type) {
 			case []byte:
-				p.Write(raw)
+				_, err := p.Write(raw)
+				if err != nil {
+					return err
+				}
 				continue
 			case string:
-				p.WriteString(raw)
+				_, err := p.WriteString(raw)
+				if err != nil {
+					return err
+				}
 				continue
 			}
 
@@ -957,7 +1065,10 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 			return err
 		}
 	}
-	s.trim(nil)
+	err := s.trim(nil)
+	if err != nil {
+		return err
+	}
 	return p.cachedWriteError()
 }
 
@@ -980,16 +1091,16 @@ func (p *printer) writeIndent(depthDelta int) {
 		p.indentedIn = false
 	}
 	if p.putNewline {
-		p.WriteByte('\n')
+		_ = p.WriteByte('\n')
 	} else {
 		p.putNewline = true
 	}
 	if len(p.prefix) > 0 {
-		p.WriteString(p.prefix)
+		_, _ = p.WriteString(p.prefix)
 	}
 	if len(p.indent) > 0 {
 		for i := 0; i < p.depth; i++ {
-			p.WriteString(p.indent)
+			_, _ = p.WriteString(p.indent)
 		}
 	}
 	if depthDelta > 0 {

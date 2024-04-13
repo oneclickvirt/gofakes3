@@ -2,7 +2,7 @@
 
 linters:
   enable:
-    #- errcheck
+    - errcheck
     - goimports
     #- revive
     - ineffassign

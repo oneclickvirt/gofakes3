@@ -74,8 +74,13 @@ func (t *S300001GetVersionAfterVersioningSuspended) Run(ctx *Context) error {
 		}
 	}
 
-	readCloseBody := func(rdr io.ReadCloser) ([]byte, error) {
-		defer rdr.Close()
+	readCloseBody := func(rdr io.ReadCloser) (out []byte, err error) {
+		defer func() {
+			closeErr := rdr.Close()
+			if closeErr != nil && err == nil {
+				err = closeErr
+			}
+		}()
 		return ioutil.ReadAll(rdr)
 	}
 

@@ -388,7 +388,10 @@ func (g *GoFakeS3) createBucket(bucket string, w http.ResponseWriter, r *http.Re
 	}
 
 	w.Header().Set("Location", "/"+bucket)
-	w.Write([]byte{})
+	_, err := w.Write([]byte{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -417,8 +420,20 @@ func (g *GoFakeS3) headBucket(bucket string, w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	w.Write([]byte{})
+	_, err := w.Write([]byte{})
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+// CheckClose is a utility function used to check the return from
+// Close in a defer statement.
+func CheckClose(c io.Closer, err *error) {
+	cerr := c.Close()
+	if *err == nil {
+		*err = cerr
+	}
 }
 
 // GetObject retrievs a bucket object.
@@ -427,7 +442,7 @@ func (g *GoFakeS3) getObject(
 	versionID VersionID,
 	w http.ResponseWriter,
 	r *http.Request,
-) error {
+) (err error) {
 
 	g.log.Print(LogInfo, "GET OBJECT", "Bucket:", bucket, "Object:", object)
 
@@ -463,7 +478,7 @@ func (g *GoFakeS3) getObject(
 		g.log.Print(LogErr, "unexpected nil object for key", bucket, object)
 		return ErrInternal
 	}
-	defer obj.Contents.Close()
+	defer CheckClose(obj.Contents, &err)
 
 	if err := g.writeGetOrHeadObjectResponse(obj, w, r); err != nil {
 		return err
@@ -517,7 +532,7 @@ func (g *GoFakeS3) headObject(
 	versionID VersionID,
 	w http.ResponseWriter,
 	r *http.Request,
-) error {
+) (err error) {
 
 	g.log.Print(LogInfo, "HEAD OBJECT", bucket, object)
 
@@ -533,7 +548,7 @@ func (g *GoFakeS3) headObject(
 		g.log.Print(LogErr, "unexpected nil object for key", bucket, object)
 		return ErrInternal
 	}
-	defer obj.Contents.Close()
+	defer CheckClose(obj.Contents, &err)
 
 	if err := g.writeGetOrHeadObjectResponse(obj, w, r); err != nil {
 		return err
@@ -546,7 +561,7 @@ func (g *GoFakeS3) headObject(
 
 // createObjectBrowserUpload allows objects to be created from a multipart upload initiated
 // by a browser form.
-func (g *GoFakeS3) createObjectBrowserUpload(bucket string, w http.ResponseWriter, r *http.Request) error {
+func (g *GoFakeS3) createObjectBrowserUpload(bucket string, w http.ResponseWriter, r *http.Request) (err error) {
 	g.log.Print(LogInfo, "CREATE OBJECT THROUGH BROWSER UPLOAD")
 
 	if err := g.ensureBucketExists(r, bucket); err != nil {
@@ -577,7 +592,7 @@ func (g *GoFakeS3) createObjectBrowserUpload(bucket string, w http.ResponseWrite
 	if err != nil {
 		return err
 	}
-	defer infile.Close()
+	defer CheckClose(infile, &err)
 
 	meta, err := metadataHeaders(r.MultipartForm.Value, g.timeSource.Now(), g.metadataSizeLimit)
 	if err != nil {
@@ -663,7 +678,7 @@ func (g *GoFakeS3) createObject(bucket, object string, w http.ResponseWriter, r 
 	// hashingReader is still needed to get the ETag even if integrityCheck
 	// is set to false:
 	rdr, err := newHashingReader(reader, md5Base64)
-	defer r.Body.Close()
+	defer CheckClose(r.Body, &err)
 	if err != nil {
 		return err
 	}
@@ -802,7 +817,7 @@ func (g *GoFakeS3) deleteObjectVersion(bucket, object string, version VersionID,
 
 // deleteMulti deletes multiple S3 objects from the bucket.
 // https://docs.aws.amazon.com/AmazonS3/latest/API/multiobjectdeleteapi.html
-func (g *GoFakeS3) deleteMulti(bucket string, w http.ResponseWriter, r *http.Request) error {
+func (g *GoFakeS3) deleteMulti(bucket string, w http.ResponseWriter, r *http.Request) (err error) {
 	g.log.Print(LogInfo, "delete multi", bucket)
 
 	if err := g.ensureBucketExists(r, bucket); err != nil {
@@ -811,7 +826,7 @@ func (g *GoFakeS3) deleteMulti(bucket string, w http.ResponseWriter, r *http.Req
 
 	var in DeleteRequest
 
-	defer r.Body.Close()
+	defer CheckClose(r.Body, &err)
 	dc := xml.NewDecoder(r.Body)
 	if err := dc.Decode(&in); err != nil {
 		return ErrorMessage(ErrMalformedXML, err.Error())
@@ -861,7 +876,7 @@ func (g *GoFakeS3) initiateMultipartUpload(bucket, object string, w http.Respons
 //	part number that was used with a previous part, the previously uploaded part
 //	is overwritten. Each part must be at least 5 MB in size, except the last
 //	part. There is no size limit on the last part of your multipart upload.
-func (g *GoFakeS3) putMultipartUploadPart(bucket, object string, uploadID UploadID, w http.ResponseWriter, r *http.Request) error {
+func (g *GoFakeS3) putMultipartUploadPart(bucket, object string, uploadID UploadID, w http.ResponseWriter, r *http.Request) (err error) {
 	g.log.Print(LogInfo, "put multipart upload", bucket, object, uploadID)
 
 	partNumber, err := strconv.ParseInt(r.URL.Query().Get("partNumber"), 10, 0)
@@ -883,7 +898,7 @@ func (g *GoFakeS3) putMultipartUploadPart(bucket, object string, uploadID Upload
 		return err
 	}
 
-	defer r.Body.Close()
+	defer CheckClose(r.Body, &err)
 
 	meta, err := metadataHeaders(r.Header, g.timeSource.Now(), g.metadataSizeLimit)
 	if err != nil {
@@ -1089,7 +1104,7 @@ func (g *GoFakeS3) ensureBucketExists(r *http.Request, bucket string) error {
 }
 
 func (g *GoFakeS3) xmlEncoder(w http.ResponseWriter) *xml.Encoder {
-	w.Write([]byte(xml.Header))
+	_, _ = w.Write([]byte(xml.Header))
 	w.Header().Set("Content-Type", "application/xml")
 
 	xe := xml.NewEncoder(w)
@@ -1097,9 +1112,9 @@ func (g *GoFakeS3) xmlEncoder(w http.ResponseWriter) *xml.Encoder {
 	return xe
 }
 
-func (g *GoFakeS3) xmlDecodeBody(rdr io.ReadCloser, into interface{}) error {
+func (g *GoFakeS3) xmlDecodeBody(rdr io.ReadCloser, into interface{}) (err error) {
 	body, err := ioutil.ReadAll(rdr)
-	defer rdr.Close()
+	defer CheckClose(rdr, &err)
 	if err != nil {
 		return err
 	}

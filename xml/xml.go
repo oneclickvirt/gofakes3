@@ -2023,18 +2023,18 @@ func (p *printer) EscapeString(s string) {
 			}
 			continue
 		}
-		p.WriteString(s[last : i-width])
-		p.Write(esc)
+		_, _ = p.WriteString(s[last : i-width])
+		_, _ = p.Write(esc)
 		last = i
 	}
-	p.WriteString(s[last:])
+	_, _ = p.WriteString(s[last:])
 }
 
 // Escape is like EscapeText but omits the error return value.
 // It is provided for backwards compatibility with Go 1.0.
 // Code targeting Go 1.1 or later should use EscapeText.
 func Escape(w io.Writer, s []byte) {
-	EscapeText(w, s)
+	_ = EscapeText(w, s)
 }
 
 var (
