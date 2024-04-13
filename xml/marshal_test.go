@@ -1698,6 +1698,7 @@ func TestMarshal(t *testing.T) {
 }
 
 type AttrParent struct {
+	//nolint:staticcheck // FIXME invalid XML tag: X>Y chain not valid with attr flag
 	X string `xml:"X>Y,attr"`
 }
 
@@ -2494,6 +2495,7 @@ func TestIssue16158(t *testing.T) {
 type InvalidXMLName struct {
 	XMLName Name `xml:"error"`
 	Type    struct {
+		//nolint:staticcheck // FIXME invalid XML tag: cannot use option attr on XMLName field
 		XMLName Name `xml:"type,attr"`
 	}
 }

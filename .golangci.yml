@@ -8,7 +8,7 @@ linters:
     - ineffassign
     - govet
     - unconvert
-    #- staticcheck
+    - staticcheck
     - gosimple
     - stylecheck
     - unused
