@@ -279,7 +279,12 @@ func (ts *testServer) s3Client() *s3.S3 {
 	config.WithRegion("region")
 	config.WithCredentials(credentials.NewStaticCredentials("dummy-access", "dummy-secret", ""))
 	config.WithS3ForcePathStyle(true) // Removes need for subdomain
-	svc := s3.New(session.New(), config)
+	ses, err := session.NewSession(config)
+	if err != nil {
+		ts.Errorf("Session creation failed: %v", err)
+		ts.Fail()
+	}
+	svc := s3.New(ses)
 	return svc
 }
 

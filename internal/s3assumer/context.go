@@ -45,7 +45,11 @@ func (c *Context) S3Client() *s3.S3 {
 		config.WithLogger(logger)
 	}
 
-	svc := s3.New(session.New(), config)
+	ses, err := session.NewSession(config)
+	if err != nil {
+		panic(fmt.Sprintf("Session creation failed: %v", err))
+	}
+	svc := s3.New(ses)
 	return svc
 }
 
