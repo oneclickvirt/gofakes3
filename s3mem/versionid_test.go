@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rclone/gofakes3"
+	"github.com/alist-org/gofakes3"
 )
 
 func TestVersionID(t *testing.T) {

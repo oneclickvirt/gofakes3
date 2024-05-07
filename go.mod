@@ -1,4 +1,4 @@
-module github.com/rclone/gofakes3
+module github.com/alist-org/gofakes3
 
 go 1.17
 

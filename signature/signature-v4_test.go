@@ -11,7 +11,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
-	"github.com/rclone/gofakes3/signature"
+	"github.com/alist-org/gofakes3/signature"
 )
 
 //nolint:all

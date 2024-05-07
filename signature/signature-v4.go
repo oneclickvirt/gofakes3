@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"sort"
 	"strings"
@@ -25,6 +26,11 @@ const (
 	headerDate       = "Date"
 	amzContentSha256 = "X-Amz-Content-Sha256"
 	amzDate          = "X-Amz-Date"
+	amzAlgorithm     = "X-Amz-Algorithm"
+	amzCredential    = "X-Amz-Credential"
+	amzSignedHeaders = "X-Amz-SignedHeaders"
+	amzSignature     = "X-Amz-Signature"
+	amzexpires       = "X-Amz-Expires"
 )
 
 // getCanonicalHeaders generate a list of request headers with their values
@@ -134,9 +140,17 @@ func V4SignVerify(r *http.Request) ErrorCode {
 	// Copy request.
 	req := *r
 	hashedPayload := getContentSha256Cksum(r)
+	queryf := req.URL.Query()
 
 	// Save authorization header.
 	v4Auth := req.Header.Get(headerAuth)
+	if v4Auth == "" {
+		// try query based
+		v4Auth = fmt.Sprintf("%s Credential=%s,SignedHeaders=%s, Signature=%s", queryf.Get(amzAlgorithm), queryf.Get(amzCredential), queryf.Get(amzSignedHeaders), queryf.Get(amzSignature))
+		if v4Auth == "" {
+			return errMissingCredTag
+		}
+	}
 
 	// Parse signature version '4' header.
 	signV4Values, Err := ParseSignV4(v4Auth)
@@ -158,7 +172,7 @@ func V4SignVerify(r *http.Request) ErrorCode {
 	// Extract date, if not present throw Error.
 	var date string
 	if date = req.Header.Get(amzDate); date == "" {
-		if date = r.Header.Get(headerDate); date == "" {
+		if date = queryf.Get(amzDate); date == "" {
 			return errMissingDateHeader
 		}
 	}
@@ -169,11 +183,10 @@ func V4SignVerify(r *http.Request) ErrorCode {
 		return errMalformedDate
 	}
 
-	// Query string.
-	queryStr := req.URL.RawQuery
-
+	queryf.Del(amzSignature)
+	rawquery := queryf.Encode()
 	// Get canonical request.
-	canonicalRequest := getCanonicalRequest(extractedSignedHeaders, hashedPayload, queryStr, req.URL.Path, req.Method)
+	canonicalRequest := getCanonicalRequest(extractedSignedHeaders, hashedPayload, rawquery, req.URL.Path, req.Method)
 
 	// Get string to sign from canonical request.
 	stringToSign := getStringToSign(canonicalRequest, t, signV4Values.Credential.getScope())
@@ -186,7 +199,14 @@ func V4SignVerify(r *http.Request) ErrorCode {
 
 	// Verify if signature match.
 	if !compareSignatureV4(newSignature, signV4Values.Signature) {
-		return errSignatureDoesNotMatch
+		//try unsigned payload
+		hashedPayload = "UNSIGNED-PAYLOAD"
+		canonicalRequest = getCanonicalRequest(extractedSignedHeaders, hashedPayload, rawquery, req.URL.Path, req.Method)
+		stringToSign = getStringToSign(canonicalRequest, t, signV4Values.Credential.getScope())
+		newSignature = getSignature(signingKey, stringToSign)
+		if !compareSignatureV4(newSignature, signV4Values.Signature) {
+			return errSignatureDoesNotMatch
+		}
 	}
 
 	// Return Error none.

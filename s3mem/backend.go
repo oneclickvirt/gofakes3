@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rclone/gofakes3"
-	"github.com/rclone/gofakes3/internal/goskipiter"
+	"github.com/alist-org/gofakes3"
+	"github.com/alist-org/gofakes3/internal/goskipiter"
 )
 
 var (
