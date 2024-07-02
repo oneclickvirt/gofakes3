@@ -19,6 +19,7 @@ type APIError struct {
 
 // the format of error response
 type errorResponse struct {
+	XMLName xml.Name `xml:"Error"`
 	Code    string
 	Message string
 }
