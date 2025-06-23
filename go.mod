@@ -1,4 +1,4 @@
-module github.com/alist-org/gofakes3
+module github.com/oneclickvirt/gofakes3
 
 go 1.17
 

@@ -37,8 +37,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/alist-org/gofakes3"
-	"github.com/alist-org/gofakes3/s3mem"
+	"github.com/oneclickvirt/gofakes3"
+	"github.com/oneclickvirt/gofakes3/s3mem"
 )
 
 const (

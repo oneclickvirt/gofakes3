@@ -3,7 +3,7 @@ package gofakes3_test
 import (
 	"testing"
 
-	"github.com/alist-org/gofakes3"
+	"github.com/oneclickvirt/gofakes3"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
